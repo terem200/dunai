@@ -1,0 +1,6 @@
+{
+  "server": {
+    "port": ":3031",
+    "logLevel":  "debug"
+  }
+}
