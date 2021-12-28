@@ -5,9 +5,8 @@ import (
 	"testing"
 )
 
-// Just mock
 func TestMainFunc(t *testing.T) {
-	t.Run("FuncUnderTest", func(t *testing.T) {
+	t.Run("Test for ci-tools check", func(t *testing.T) {
 		actual := true
 		expected := true
 
