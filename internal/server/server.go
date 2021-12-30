@@ -5,19 +5,19 @@ import (
 	"github.com/gin-gonic/gin"
 	mysqlHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mysql"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
-	"go.uber.org/zap"
+	"gitlab.insigit.com/qa/outrunner/pkg/logger"
 )
 
 // Server - 'outRunner' server struct
 type Server struct {
 	config *Config
 	Engine *gin.Engine
-	Logger *zap.Logger
+	Logger logger.ILogger
 	mySQL  map[string]mysql.Service
 }
 
 // New - initialize new connector server
-func New(config *Config, logger *zap.Logger) *Server {
+func New(config *Config, logger logger.ILogger) *Server {
 	return &Server{
 		config: config,
 		Logger: logger,
@@ -38,6 +38,8 @@ func (s *Server) Run() error {
 	if err != nil {
 		return err
 	}
+
+	s.Logger.Info("Server started successfully")
 	return nil
 }
 
@@ -59,7 +61,7 @@ func (s *Server) configureMysql() error {
 			s.mySQL = map[string]mysql.Service{}
 		}
 
-		st := mysql.New(&v)
+		st := mysql.New(&v, s.Logger)
 
 		if err := st.Open(); err != nil {
 			e := fmt.Errorf("MySql : %s, \n%w", k, err)

@@ -3,7 +3,7 @@ package mysql
 import (
 	"github.com/gin-gonic/gin"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
-	"go.uber.org/zap"
+	"gitlab.insigit.com/qa/outrunner/pkg/logger"
 )
 
 const (
@@ -14,13 +14,13 @@ const (
 
 type handler struct {
 	services map[string]mysql.Service
-	logger   *zap.Logger
+	logger   logger.ILogger
 }
 
 // NewHandler - initializes and returns new handler for MySQL services.
 // It doesn't register routes to serve requests relates to MySQL.
 // Next step you need to call Register func available from returned handler. */
-func NewHandler(s *map[string]mysql.Service, l *zap.Logger) *handler {
+func NewHandler(s *map[string]mysql.Service, l logger.ILogger) *handler {
 	return &handler{
 		services: *s,
 		logger:   l,
