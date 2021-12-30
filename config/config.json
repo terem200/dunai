@@ -1,0 +1,13 @@
+{
+  "server": {
+    "port": ":3031",
+    "logLevel":  "debug"
+  },
+  "mysql": {
+    "testDB": {
+      "connectionUrl": "root:dmp_admin_ci_pw@tcp(mysql:3306)/jump_service_snippet?charset=utf8mb4&parseTime=True&loc=Local",
+      "maxRetries": 40,
+      "waitRetry": 1500
+    }
+  }
+}
