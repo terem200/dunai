@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"gitlab.insigit.com/qa/outrunner/internal/services/mongo"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
 	"io/ioutil"
 )
@@ -19,6 +20,7 @@ type serverConfig struct {
 type Config struct {
 	Server *serverConfig           `json:"server"`
 	MySql  map[string]mysql.Config `json:"mySql"`
+	Mongo  map[string]mongo.Config `json:"mongo"`
 }
 
 // NewConfig - initialize new config with default values for 'outRunner' server.

@@ -3,7 +3,9 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	mongoHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mongo"
 	mysqlHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mysql"
+	"gitlab.insigit.com/qa/outrunner/internal/services/mongo"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
 	"gitlab.insigit.com/qa/outrunner/pkg/logger"
 )
@@ -14,6 +16,7 @@ type Server struct {
 	Engine *gin.Engine
 	Logger logger.ILogger
 	mySQL  map[string]mysql.Service
+	mongo  map[string]mongo.Service
 }
 
 // New - initialize new connector server
@@ -28,6 +31,11 @@ func New(config *Config, logger logger.ILogger) *Server {
 // Run outRunner server
 func (s *Server) Run() error {
 	err := s.configureMysql()
+	if err != nil {
+		return err
+	}
+
+	err = s.configureMongo()
 	if err != nil {
 		return err
 	}
@@ -53,6 +61,8 @@ func (s *Server) initRoutes() {
 	mysql := mysqlHandler.NewHandler(&s.mySQL, s.Logger)
 	mysql.Register(s.Engine)
 
+	mongo := mongoHandler.NewHandler(&s.mongo, s.Logger)
+	mongo.Register(s.Engine)
 }
 
 func (s *Server) configureMysql() error {
@@ -69,6 +79,24 @@ func (s *Server) configureMysql() error {
 		}
 		s.mySQL[k] = mysql.NewService(st)
 		s.Logger.Info(fmt.Sprintf("MySql servise started: %s", k))
+	}
+	return nil
+}
+
+func (s *Server) configureMongo() error {
+	for k, v := range s.config.Mongo {
+		if s.mongo == nil {
+			s.mongo = map[string]mongo.Service{}
+		}
+
+		st := mongo.New(&v, s.Logger)
+
+		if err := st.Open(); err != nil {
+			e := fmt.Errorf("Mongo : %s, \n%w", k, err)
+			return e
+		}
+		s.mongo[k] = mongo.NewService(st)
+		s.Logger.Info(fmt.Sprintf("Mongo servise started: %s", k))
 	}
 	return nil
 }
