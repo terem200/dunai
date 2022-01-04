@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"gitlab.insigit.com/qa/outrunner/internal/services/kafka"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mongo"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
 	"io/ioutil"
@@ -18,9 +19,10 @@ type serverConfig struct {
 //					BindAddr: ":3030"
 //					LogLevel: "debug"
 type Config struct {
-	Server *serverConfig           `json:"server"`
-	MySql  map[string]mysql.Config `json:"mySql"`
-	Mongo  map[string]mongo.Config `json:"mongo"`
+	Server        *serverConfig           `json:"server"`
+	MySql         map[string]mysql.Config `json:"mySql"`
+	Mongo         map[string]mongo.Config `json:"mongo"`
+	KafkaConsumer map[string]kafka.Config `json:"kafkaConsumer"`
 }
 
 // NewConfig - initialize new config with default values for 'outRunner' server.

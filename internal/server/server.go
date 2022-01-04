@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	mongoHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mongo"
 	mysqlHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mysql"
+	"gitlab.insigit.com/qa/outrunner/internal/services/kafka"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mongo"
 	"gitlab.insigit.com/qa/outrunner/internal/services/mysql"
 	"gitlab.insigit.com/qa/outrunner/pkg/logger"
@@ -12,11 +13,12 @@ import (
 
 // Server - 'outRunner' server struct
 type Server struct {
-	config *Config
-	Engine *gin.Engine
-	Logger logger.ILogger
-	mySQL  map[string]mysql.Service
-	mongo  map[string]mongo.Service
+	config         *Config
+	Engine         *gin.Engine
+	Logger         logger.ILogger
+	mySQL          map[string]mysql.Service
+	mongo          map[string]mongo.Service
+	kafkaConsumers map[string]kafka.ConsumerService
 }
 
 // New - initialize new connector server
@@ -36,6 +38,11 @@ func (s *Server) Run() error {
 	}
 
 	err = s.configureMongo()
+	if err != nil {
+		return err
+	}
+
+	err = s.configureKafkaConsumers()
 	if err != nil {
 		return err
 	}
@@ -97,6 +104,24 @@ func (s *Server) configureMongo() error {
 		}
 		s.mongo[k] = mongo.NewService(st)
 		s.Logger.Info(fmt.Sprintf("Mongo servise started: %s", k))
+	}
+	return nil
+}
+
+func (s *Server) configureKafkaConsumers() error {
+	for k, v := range s.config.KafkaConsumer {
+		if s.kafkaConsumers == nil {
+			s.kafkaConsumers = map[string]kafka.ConsumerService{}
+		}
+
+		st := kafka.New(&v, s.Logger)
+
+		if err := st.Connect(); err != nil {
+			e := fmt.Errorf("kafka consumer : %s, \n%w", k, err)
+			return e
+		}
+		s.kafkaConsumers[k] = kafka.NewService(st)
+		s.Logger.Info(fmt.Sprintf("kafka consumer started: %s", k))
 	}
 	return nil
 }

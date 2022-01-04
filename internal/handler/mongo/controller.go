@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 )
 
-func (h *handler) getRecords() gin.HandlerFunc {
+func (h *mongoHandler) getRecords() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dbName := c.Param("dbName")
 		if h.services[dbName] == nil {
@@ -44,7 +44,7 @@ func (h *handler) getRecords() gin.HandlerFunc {
 	}
 }
 
-func (h *handler) modify() gin.HandlerFunc {
+func (h *mongoHandler) modify() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dbName := c.Param("dbName")
 		if h.services[dbName] == nil {

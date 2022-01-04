@@ -17,5 +17,12 @@
       "maxRetries": 40,
       "waitRetry": 1500
     }
+  },
+  "kafkaConsumer": {
+    "testTopic": {
+      "connectionUrl": "localhost:9092",
+      "maxRetries": 40,
+      "waitRetry": 1500
+    }
   }
 }

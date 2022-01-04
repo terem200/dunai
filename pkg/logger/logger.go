@@ -10,11 +10,11 @@ import (
 
 // ILogger -.
 type ILogger interface {
-	Debug(message interface{}, args ...interface{})
+	Debug(message string, args ...interface{})
 	Info(message string, args ...interface{})
 	Warn(message string, args ...interface{})
-	Error(message interface{}, args ...interface{})
-	Fatal(message interface{}, args ...interface{})
+	Error(message string, args ...interface{})
+	Fatal(message string, args ...interface{})
 }
 
 // Logger -.
@@ -48,13 +48,13 @@ func New(level string) *Logger {
 }
 
 // Debug -.
-func (l *Logger) Debug(message interface{}, args ...interface{}) {
-	l.msg("debug", message, args...)
+func (l *Logger) Debug(message string, args ...interface{}) {
+	l.logger.Debug().Msgf(message, args...)
 }
 
 // Info -.
 func (l *Logger) Info(message string, args ...interface{}) {
-	l.log(message, args...)
+	l.logger.Info().Msgf(message, args...)
 }
 
 // Warn -.
@@ -63,7 +63,7 @@ func (l *Logger) Warn(message string, args ...interface{}) {
 }
 
 // Error -.
-func (l *Logger) Error(message interface{}, args ...interface{}) {
+func (l *Logger) Error(message string, args ...interface{}) {
 	if l.logger.GetLevel() == zerolog.DebugLevel {
 		l.Debug(message, args...)
 	}
@@ -72,10 +72,8 @@ func (l *Logger) Error(message interface{}, args ...interface{}) {
 }
 
 // Fatal -.
-func (l *Logger) Fatal(message interface{}, args ...interface{}) {
-	l.msg("fatal", message, args...)
-
-	os.Exit(1)
+func (l *Logger) Fatal(message string, args ...interface{}) {
+	l.logger.Fatal().Msgf(message, args...)
 }
 
 func (l *Logger) log(message string, args ...interface{}) {
