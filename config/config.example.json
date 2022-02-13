@@ -9,5 +9,13 @@
       "maxRetries": 40,
       "waitRetry": 1500
     }
+  },
+  "mongo": {
+    "adsbox_db": {
+      "database": "adsbox_db",
+      "connectionUrl": "mongodb://localhost:27017/",
+      "maxRetries": 40,
+      "waitRetry": 1500
+    }
   }
 }

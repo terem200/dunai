@@ -3,7 +3,10 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/jmoiron/sqlx"
+	"gitlab.insigit.com/qa/outrunner/pkg/logger"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -11,24 +14,28 @@ import (
 
 type mysql struct {
 	config *Config
+	logger logger.ILogger
 	db     *sqlx.DB
 }
 
 // New - initialize new MySQL struct with config
-func New(config *Config) storage {
+func New(c *Config, l logger.ILogger) storage {
 	return &mysql{
-		config: config,
+		config: c,
+		logger: l,
 	}
 }
 
 // Open new MySQL connection using passed to New func Config
 func (m *mysql) Open() error {
-	var maxRetries int = m.config.MaxRetries
-	var waitTime int = m.config.WaitRetry
+	var maxRetries = m.config.MaxRetries
+	var waitTime = m.config.WaitRetry
 	var i int
 
 	var err error
+
 	for i < maxRetries {
+		m.logger.Debug(fmt.Sprintf("Open mysql connection. Attempt %s", strconv.Itoa(i+1)))
 		err = m.open()
 		if err != nil {
 			i++

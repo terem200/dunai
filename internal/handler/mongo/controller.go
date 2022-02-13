@@ -1,18 +1,19 @@
-package mysql
+package mongo
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	customResponse "gitlab.insigit.com/qa/outrunner/internal/handler"
+	"gitlab.insigit.com/qa/outrunner/internal/services/mongo"
 	"io/ioutil"
 )
 
-func (h *mySqlHandler) getRecords() gin.HandlerFunc {
+func (h *mongoHandler) getRecords() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dbName := c.Param("dbName")
 		if h.services[dbName] == nil {
-			e := fmt.Errorf("mysql connection for '%s' not configured", dbName)
+			e := fmt.Errorf("mongo connection for '%s' not configured", dbName)
 			customResponse.RequestErr(c, e)
 			h.logger.Error(e.Error())
 			return
@@ -25,14 +26,14 @@ func (h *mySqlHandler) getRecords() gin.HandlerFunc {
 			return
 		}
 
-		var dto dto
+		var dto dtoGet
 		if err := json.Unmarshal(b, &dto); err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())
 			return
 		}
 
-		data, err := h.services[dbName].Get(c, dto.Query)
+		data, err := h.services[dbName].Get(c, mongo.QueryGet(dto))
 		if err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())
@@ -43,11 +44,11 @@ func (h *mySqlHandler) getRecords() gin.HandlerFunc {
 	}
 }
 
-func (h *mySqlHandler) modify() gin.HandlerFunc {
+func (h *mongoHandler) modify() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dbName := c.Param("dbName")
 		if h.services[dbName] == nil {
-			e := fmt.Errorf("mysql connection for '%s' not configured", dbName)
+			e := fmt.Errorf("mongo connection for '%s' not configured", dbName)
 			customResponse.RequestErr(c, e)
 			h.logger.Error(e.Error())
 			return
@@ -60,14 +61,14 @@ func (h *mySqlHandler) modify() gin.HandlerFunc {
 			return
 		}
 
-		var dto dto
+		var dto dtoModify
 		if err := json.Unmarshal(b, &dto); err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())
 			return
 		}
 
-		_, err = h.services[dbName].Create(c, dto.Query)
+		_, err = h.services[dbName].Create(c, mongo.QueryInsert(dto))
 		if err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())

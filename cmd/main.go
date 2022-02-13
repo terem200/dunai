@@ -1,24 +1,26 @@
 package main
 
 import (
+	"fmt"
 	"gitlab.insigit.com/qa/outrunner/internal/server"
-	"go.uber.org/zap"
+	"gitlab.insigit.com/qa/outrunner/pkg/logger"
+	"log"
 )
 
 const configPath = "config/config.json"
 
 func main() {
-	logger, _ := zap.NewProduction()
 	serverCfg := server.NewConfig()
-
 	if err := server.ReadConfig(configPath, serverCfg); err != nil {
-		logger.Fatal("Config read failed...", zap.String("Error : ", err.Error()))
+		log.Fatal(fmt.Sprintf("Config read failed...%s", err.Error()))
 	}
+
+	logger := logger.New(serverCfg.Server.LogLevel)
 
 	s := server.New(serverCfg, logger)
 
 	err := s.Run()
 	if err != nil {
-		logger.Fatal("Server start failed...", zap.String("Error : ", err.Error()))
+		logger.Fatal(fmt.Sprintf("Server start failed... %s", err.Error()))
 	}
 }
