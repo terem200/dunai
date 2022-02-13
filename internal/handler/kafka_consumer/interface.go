@@ -1,13 +1,18 @@
-package kafka
+package kafka_consumer
 
-import "context"
+import (
+	"context"
+)
 
-type consumerConnection interface {
-	Connect() error
+type Message = map[string]interface{}
+type Query = map[string]interface{}
+
+type ConsumerConnection interface {
+	Connect(topic string) error
 	Disconnect() error
-	Get() ([]message, error)
+	Get() []Message
 }
-type producerConnection interface {
+type ProducerConnection interface {
 	Connect() error
 	Disconnect() error
 	Send() (bool, error)

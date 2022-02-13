@@ -3,21 +3,6 @@
     "port": ":3031",
     "logLevel":  "debug"
   },
-  "mysql": {
-    "CronusDb": {
-      "connectionUrl": "root:dmp_admin_ci_pw@tcp(mysql:3306)/cronus_snippet?charset=utf8mb4&parseTime=True&loc=Local",
-      "maxRetries": 40,
-      "waitRetry": 1500
-    }
-  },
-  "mongo": {
-    "adsbox_db": {
-      "database": "adsbox_db",
-      "connectionUrl": "mongodb://localhost:27017/",
-      "maxRetries": 40,
-      "waitRetry": 1500
-    }
-  },
   "kafkaConsumer": {
     "testTopic": {
       "connectionUrl": "localhost:9092",

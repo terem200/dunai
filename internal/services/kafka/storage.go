@@ -2,8 +2,10 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
+	kafkaGo "github.com/segmentio/kafka-go"
+	"gitlab.insigit.com/qa/outrunner/internal/handler/kafka_consumer"
 	"gitlab.insigit.com/qa/outrunner/pkg/logger"
 	"strconv"
 	"time"
@@ -13,19 +15,19 @@ import (
 type Consumer struct {
 	config     *Config
 	logger     logger.ILogger
-	connection *kafka.Reader
-	messages   []message
+	connection *kafkaGo.Reader
+	messages   []kafka_consumer.Message
 }
 
 // New returns new *Consumer struct with passed config
-func New(c *Config, l logger.ILogger) consumerConnection {
+func New(c *Config, l logger.ILogger) kafka_consumer.ConsumerConnection {
 	return &Consumer{
 		config: c,
 		logger: l,
 	}
 }
 
-func (c *Consumer) Connect() error {
+func (c *Consumer) Connect(topic string) error {
 	var maxRetries = c.config.MaxRetries
 	var waitTime = c.config.WaitRetry
 	var i int
@@ -34,7 +36,7 @@ func (c *Consumer) Connect() error {
 
 	for i < maxRetries {
 		c.logger.Debug(fmt.Sprintf("Establish kafka consumer connection. Attempt %s", strconv.Itoa(i+1)))
-		err = c.connect()
+		err = c.connect(topic)
 		if err != nil {
 			i++
 			time.Sleep(time.Duration(waitTime) * time.Millisecond)
@@ -48,18 +50,12 @@ func (c *Consumer) Connect() error {
 	}
 
 	go c.read(context.Background())
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
 
-func (c *Consumer) connect() error {
-	// TODO
-	var topic = "my-topic-test"
-
-	r := kafka.NewReader(kafka.ReaderConfig{
+func (c *Consumer) connect(topic string) error {
+	r := kafkaGo.NewReader(kafkaGo.ReaderConfig{
 		Brokers:   []string{c.config.ConnectionURL},
 		Topic:     topic,
 		Partition: 0,
@@ -80,12 +76,22 @@ func (c *Consumer) read(cxt context.Context) {
 	for {
 		m, err := c.connection.ReadMessage(cxt)
 		if err != nil {
+			c.logger.Debug("READING MESSAGE ERROR::", err.Error())
 			break
 		}
 		c.logger.Debug(m.Topic, string(m.Value))
+
+		var parsed kafka_consumer.Message
+		err = json.Unmarshal(m.Value, &parsed)
+		if err != nil {
+			c.logger.Debug("PARSING MESSAGE ERROR::", err.Error())
+		}
+
+		c.messages = append(c.messages, parsed)
+		c.logger.Debug("MESSAGES", c.messages)
 	}
 }
 
-func (c *Consumer) Get() []message {
+func (c *Consumer) Get() []kafka_consumer.Message {
 	return c.messages
 }

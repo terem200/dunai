@@ -1,26 +1,27 @@
 package kafka
 
-import "context"
-
-type message = map[string]interface{}
-type query = map[string]interface{}
+import (
+	"context"
+	"gitlab.insigit.com/qa/outrunner/internal/handler/kafka_consumer"
+)
 
 type consumerService struct {
-	conn consumerConnection
+	conn kafka_consumer.ConsumerConnection
 }
 
-func NewService(c consumerConnection) ConsumerService {
+func NewService(c kafka_consumer.ConsumerConnection) kafka_consumer.ConsumerService {
 	return &consumerService{
 		conn: c,
 	}
 }
 
-func (cs *consumerService) Get(ctx context.Context, q query) ([]message, error) {
-	messages := make([]message, 0)
+func (cs *consumerService) Get(ctx context.Context, q kafka_consumer.Query) ([]kafka_consumer.Message, error) {
+	messages := make([]kafka_consumer.Message, 0)
 
-	km, err := cs.conn.Get()
-	if err != nil {
-		return nil, err
+	km := cs.conn.Get()
+
+	if len(q) == 0 {
+		return km, nil
 	}
 
 	for _, m := range km {

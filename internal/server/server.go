@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gitlab.insigit.com/qa/outrunner/internal/handler/kafka_consumer"
 	mongoHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mongo"
 	mysqlHandler "gitlab.insigit.com/qa/outrunner/internal/handler/mysql"
 	"gitlab.insigit.com/qa/outrunner/internal/services/kafka"
@@ -18,7 +19,7 @@ type Server struct {
 	Logger         logger.ILogger
 	mySQL          map[string]mysql.Service
 	mongo          map[string]mongo.Service
-	kafkaConsumers map[string]kafka.ConsumerService
+	kafkaConsumers map[string]kafka_consumer.ConsumerService
 }
 
 // New - initialize new connector server
@@ -65,11 +66,14 @@ func (s *Server) initRoutes() {
 		})
 	})
 
-	mysql := mysqlHandler.NewHandler(&s.mySQL, s.Logger)
-	mysql.Register(s.Engine)
+	mysqlH := mysqlHandler.NewHandler(&s.mySQL, s.Logger)
+	mysqlH.Register(s.Engine)
 
-	mongo := mongoHandler.NewHandler(&s.mongo, s.Logger)
-	mongo.Register(s.Engine)
+	mongoH := mongoHandler.NewHandler(&s.mongo, s.Logger)
+	mongoH.Register(s.Engine)
+
+	kafkaC := kafka_consumer.NewHandler(s.kafkaConsumers, s.Logger)
+	kafkaC.Register(s.Engine)
 }
 
 func (s *Server) configureMysql() error {
@@ -111,12 +115,12 @@ func (s *Server) configureMongo() error {
 func (s *Server) configureKafkaConsumers() error {
 	for k, v := range s.config.KafkaConsumer {
 		if s.kafkaConsumers == nil {
-			s.kafkaConsumers = map[string]kafka.ConsumerService{}
+			s.kafkaConsumers = map[string]kafka_consumer.ConsumerService{}
 		}
 
 		st := kafka.New(&v, s.Logger)
 
-		if err := st.Connect(); err != nil {
+		if err := st.Connect(k); err != nil {
 			e := fmt.Errorf("kafka consumer : %s, \n%w", k, err)
 			return e
 		}
