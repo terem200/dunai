@@ -1,4 +1,4 @@
-package kafka_consumer
+package kafka_producer
 
 import (
 	"encoding/json"
@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 )
 
-func (h *kafkaConsumerHandler) getRecords() gin.HandlerFunc {
+func (h *kafkaProducerHandler) writeRecord() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		topic := c.Param("topic")
-		if h.servicesConsumer[topic] == nil {
-			e := fmt.Errorf("kafka cosumer connection for topic '%s' not configured", topic)
+		if h.servicesProducer[topic] == nil {
+			e := fmt.Errorf("kafka producer connection for topic '%s' not configured", topic)
 			customResponse.RequestErr(c, e)
 			h.logger.Error(e.Error())
 			return
@@ -25,20 +25,20 @@ func (h *kafkaConsumerHandler) getRecords() gin.HandlerFunc {
 			return
 		}
 
-		var dto dtoGet
+		var dto dtoSend
 		if err := json.Unmarshal(b, &dto); err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())
 			return
 		}
 
-		data, err := h.servicesConsumer[topic].Get(c, dto.Query)
+		err = h.servicesProducer[topic].Send(c, dto.Message)
 		if err != nil {
 			customResponse.InternalErr(c, err)
 			h.logger.Error(err.Error())
 			return
 		}
 
-		customResponse.SuccessData(c, data)
+		customResponse.SuccessData(c, "ok")
 	}
 }

@@ -1,11 +1,10 @@
-package kafka
+package kafka_consumer
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	kafkaGo "github.com/segmentio/kafka-go"
-	"gitlab.insigit.com/qa/outrunner/internal/handler/kafka_consumer"
 	"gitlab.insigit.com/qa/outrunner/pkg/logger"
 	"strconv"
 	"time"
@@ -16,11 +15,11 @@ type Consumer struct {
 	config     *Config
 	logger     logger.ILogger
 	connection *kafkaGo.Reader
-	messages   []kafka_consumer.Message
+	messages   []Message
 }
 
 // New returns new *Consumer struct with passed config
-func New(c *Config, l logger.ILogger) kafka_consumer.ConsumerConnection {
+func New(c *Config, l logger.ILogger) ConsumerConnection {
 	return &Consumer{
 		config: c,
 		logger: l,
@@ -81,7 +80,7 @@ func (c *Consumer) read(cxt context.Context) {
 		}
 		c.logger.Debug(m.Topic, string(m.Value))
 
-		var parsed kafka_consumer.Message
+		var parsed Message
 		err = json.Unmarshal(m.Value, &parsed)
 		if err != nil {
 			c.logger.Debug("PARSING MESSAGE ERROR::", err.Error())
@@ -92,6 +91,6 @@ func (c *Consumer) read(cxt context.Context) {
 	}
 }
 
-func (c *Consumer) Get() []kafka_consumer.Message {
+func (c *Consumer) Get() []Message {
 	return c.messages
 }

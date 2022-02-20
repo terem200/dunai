@@ -1,4 +1,4 @@
-package kafka
+package kafka_consumer
 
 import (
 	"context"
@@ -6,17 +6,17 @@ import (
 )
 
 type consumerService struct {
-	conn kafka_consumer.ConsumerConnection
+	conn ConsumerConnection
 }
 
-func NewService(c kafka_consumer.ConsumerConnection) kafka_consumer.ConsumerService {
+func NewService(c ConsumerConnection) kafka_consumer.ConsumerService {
 	return &consumerService{
 		conn: c,
 	}
 }
 
-func (cs *consumerService) Get(ctx context.Context, q kafka_consumer.Query) ([]kafka_consumer.Message, error) {
-	messages := make([]kafka_consumer.Message, 0)
+func (cs *consumerService) Get(ctx context.Context, q Query) ([]Message, error) {
+	messages := make([]Message, 0)
 
 	km := cs.conn.Get()
 

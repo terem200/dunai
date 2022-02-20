@@ -7,24 +7,21 @@ import (
 )
 
 const (
-	getPath    = "/kafka/:topic/get"
-	createPath = "/kafka/:topic/send"
+	getPath = "/kafka/:topic/get"
 )
 
-type kafkaHandler struct {
+type kafkaConsumerHandler struct {
 	servicesConsumer map[string]ConsumerService
 	logger           logger.ILogger
 }
 
-func NewHandler(
-	sc map[string]ConsumerService,
-	l logger.ILogger) handler.IHandler {
-	return &kafkaHandler{
+func NewHandler(sc map[string]ConsumerService, l logger.ILogger) handler.IHandler {
+	return &kafkaConsumerHandler{
 		servicesConsumer: sc,
 		logger:           l,
 	}
 }
 
-func (h kafkaHandler) Register(e *gin.Engine) {
+func (h kafkaConsumerHandler) Register(e *gin.Engine) {
 	e.POST(getPath, h.getRecords())
 }

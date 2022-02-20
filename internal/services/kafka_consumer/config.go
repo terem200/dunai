@@ -1,4 +1,4 @@
-package kafka
+package kafka_consumer
 
 type Config struct {
 	ConnectionURL string `json:"connectionUrl"`
